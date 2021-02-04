@@ -1,0 +1,55 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% if form.errors %}
+<div class="d-flex flex-row justify-content-center">
+    <div class="alert alert-danger">
+        <p>Usuario y contraseña no conciden. Por favor intente de nuevo.</p>
+    </div>
+</div>
+    {% endif %}
+    {% if next %}
+    <div class="d-flex flex-row justify-content-center">
+        {% if user.is_authenticated %}
+        <p>Su cuenta no tiene acceso a esta página. Para continuar,
+        por favor inicie sesión con una cuenta que tenga acceso.</p>
+        {% else %}
+        <div class="alert alert-warning">
+            <p>Por favor inicie sesión para ver esta página.</p>
+        </div>  
+        {% endif %}
+    </div>
+    {% endif %}
+<div class="d-flex flex-row justify-content-center">
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        <table>
+            <tr class="form-group form-row">
+                <td class="input input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-user"></i></span>
+                    </div>
+                    {{ form.username }}
+                </td>
+            </tr>
+            <tr class="form-group form-row">
+                <td class="input input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text"><i class="fa fa-lock"></i></span>
+                    </div>
+                    {{ form.password }}
+                </td>
+            </tr>
+        </table>
+
+        <div class="form-row">
+          <input type="submit" value="Iniciar sesión" class="btn btn-success w-100 text-uppercase"/>
+          <input type="hidden" name="next" value="{{ next }}"/>
+        </div>
+    </form>
+</div>
+<div class="d-flex flex-row justify-content-center">
+    <p><a href="{% url 'password_reset' %}">Olvidó su contraseña?</a></p>
+</div>
+
+{% endblock %}

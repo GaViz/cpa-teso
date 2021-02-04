@@ -1,0 +1,147 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col">
+        {% if form_lectura.errors %}
+        <div class="alert alert-danger">
+            <ul>    
+            {% for field in form_lectura %}
+                {% for error in field.errors %}
+                    <li>{{ error|escape }}</li>
+                {% endfor %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if mensaje %}
+         <div class="alert alert-danger">
+            <ul>
+                <li>{{ mensaje }}</li>
+
+            </ul>
+        </div>
+        {% endif %}
+        <form id="form-lectura" action="" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <table>
+                    <tbody>
+                    {% for field in form_lectura %}
+                        <tr>
+                            <th>{{ field.label_tag }}</th>
+                            <td>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <span class="helptext">{{ field.help_text|safe }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <br>
+                <div class="input-group-append">
+                    <input type="submit" value="Agregar" class="btn btn-success" name="lectura"/>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row mt-5">
+    <div class="col">
+        <h4>Facturas leídas</h4>
+        <table id="tabla-facturas" class="table table-striped" id="tabla-pagos">
+            <caption>Listado de facturas</caption>
+            <thead class="thead-light">
+                <th scope="col">Empresa</th>
+                <th scope="col">Nro. Factura</th>
+                <th scope="col">Importe</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr class="table-success">
+                    <td></td>
+                    <td>TOTAL</td>
+                    <td>0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+        {% if form_finalizar.errors %}
+            <div class="alert alert-danger">
+                <ul>    
+                {% for field in form_finalizar %}
+                    {% for error in field.errors %}
+                        <li>{{ error|escape }}</li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+        <form id="form-finalizar" action="{% url 'finalizar' %}" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <table>
+                    <tbody>
+                    {% for field in form_finalizar %}
+                        <tr>
+                            <th>{{ field.label_tag }}</th>
+                            <td>
+                                {{ field }}
+                                {% if field.help_text %}
+                                    <span class="helptext">{{ field.help_text|safe }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <br>
+                <div class="input-group-append">
+                    <input type="submit" value="Finalizar" class="btn btn-success" name="finalizar"/>
+                </div>
+            </div>
+        </form>
+    </div>    
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    var total = 0;
+    $("#form-lectura").submit(function(e){
+        e.preventDefault();
+        var serializedData = $(this).serialize();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '{% url "index" %}',
+            data: serializedData,
+            success: function(data) {
+                $("#tabla-facturas tbody").append(
+                    `<tr>
+                        <td>${data["empresa"]}</td>
+                        <td>${data["numero_factura"]}</td>
+                        <td>${data["importe"].toFixed(2)}</td>
+                    </tr>`
+                );
+
+                $("#form-lectura").trigger('reset');
+                total += data['importe'];
+                $('table tfoot td').eq(2).text(total.toFixed(2));
+            },
+            error: function(data) {
+                alert(data.responseJSON["message"]);
+                $("#form-lectura").trigger('reset');
+            }
+        })
+    });
+
+
+</script>
+{% endblock %}
