@@ -31,7 +31,7 @@ class Sucursal(models.Model):
 
 class Lote(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    cajero = models.ForeignKey('Empleado', models.PROTECT, null=True)
+    cajero = models.ForeignKey('Empleado', models.PROTECT)
     sucursal = models.ForeignKey('Sucursal', models.PROTECT, null=True)
     fecha = models.DateField(auto_now_add=True)
 
@@ -58,12 +58,12 @@ class UserManager(BaseUserManager):
         if not mail:
             raise ValueError('Debe ingresar un mail')
 
-        # if not Empleado.objects.filter(mail=mail).exists():
-        #     raise ValueError('No existe empleado')
+        if not Empleado.objects.filter(mail=mail).exists():
+            raise ValueError('No existe empleado')
 
         user = self.model(mail=self.normalize_email(mail))
         user.set_password(password)
-        # user.empleado = Empleado.objects.get(mail=mail)
+        user.empleado = Empleado.objects.get(mail=mail)
         user.save(using=self._db)
         return user
 
@@ -76,7 +76,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     mail = models.EmailField(verbose_name='mail', max_length=255, unique=True)
-    # empleado = models.OneToOneField(Empleado, on_delete=models.CASCADE)
+    empleado = models.OneToOneField(Empleado, on_delete=models.PROTECT)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
