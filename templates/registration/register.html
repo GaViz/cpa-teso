@@ -14,7 +14,7 @@
 	<form method="post" action="{% url 'register' %}">
         {% csrf_token %}
         <table>
-            <tr class="form-group form-row">
+            <tr class="form-group row">
                 <td class="input input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-user"></i></span>
@@ -22,7 +22,7 @@
                     {{ form.mail }}
                 </td>
             </tr>
-            <tr class="form-group form-row">
+            <tr class="form-group row">
                 <td class="input input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-lock"></i></span>
@@ -30,7 +30,7 @@
                     {{ form.password1 }}
                 </td>
             </tr>
-            <tr class="form-group form-row">
+            <tr class="form-group row">
                 <td class="input input-group">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-lock"></i></span>
@@ -40,7 +40,7 @@
             </tr>
         </table>
 
-        <div class="form-row">
+        <div class="row">
           <input type="submit" value="Crear usuario" class="btn btn-success float-right w-100 text-uppercase"/>
         </div>
     </form>

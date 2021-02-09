@@ -24,16 +24,16 @@
     <form method="post" action="{% url 'login' %}">
         {% csrf_token %}
         <table>
-            <tr class="form-group form-row">
-                <td class="input input-group">
+            <tr class="form-group row">
+                <td class="input input-group input-group-lg">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-user"></i></span>
                     </div>
                     {{ form.username }}
                 </td>
             </tr>
-            <tr class="form-group form-row">
-                <td class="input input-group">
+            <tr class="form-group row">
+                <td class="input input-group input-group-lg">
                     <div class="input-group-prepend">
                         <span class="input-group-text"><i class="fa fa-lock"></i></span>
                     </div>
@@ -42,7 +42,7 @@
             </tr>
         </table>
 
-        <div class="form-row">
+        <div class="row">
           <input type="submit" value="Iniciar sesión" class="btn btn-success w-100 text-uppercase"/>
           <input type="hidden" name="next" value="{{ next }}"/>
         </div>
