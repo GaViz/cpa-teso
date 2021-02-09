@@ -1,8 +1,8 @@
 {% extends "base_generic.html" %}
 
 {% block content %}
-<div class="row">
-    <div class="col">
+<div class="d-flex flex-row justify-content-between">
+    <div class="flex-column">
         {% if form_lectura.errors %}
         <div class="alert alert-danger">
             <ul>    
@@ -47,31 +47,7 @@
             </div>
         </form>
     </div>
-</div>
-<div class="row mt-5">
-    <div class="col">
-        <h4>Facturas leídas</h4>
-        <table id="tabla-facturas" class="table table-striped" id="tabla-pagos">
-            <caption>Listado de facturas</caption>
-            <thead class="thead-light">
-                <th scope="col">Empresa</th>
-                <th scope="col">Nro. Factura</th>
-                <th scope="col">Importe</th>
-            </thead>
-            <tbody>
-            </tbody>
-            <tfoot>
-                <tr class="table-success">
-                    <td></td>
-                    <td>TOTAL</td>
-                    <td>0</td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
-<div class="row">
-    <div class="col">
+    <div class="flex-column">
         {% if form_finalizar.errors %}
             <div class="alert alert-danger">
                 <ul>    
@@ -83,7 +59,7 @@
                 </ul>
             </div>
         {% endif %}
-        <form id="form-finalizar" action="{% url 'finalizar' %}" method="post">
+        <form id="form-finalizar" action="" method="post">
             {% csrf_token %}
             <div class="input-group">
                 <table>
@@ -103,11 +79,33 @@
                 </table>
                 <br>
                 <div class="input-group-append">
-                    <input type="submit" value="Finalizar" class="btn btn-success" name="finalizar"/>
+                    <input type="submit" value="Calcular vuelto" class="btn btn-success" name="finalizar"/>
                 </div>
             </div>
         </form>
-    </div>    
+    </div>
+</div>
+<div class="row mt-5">
+    <div class="col">
+        <h4>Facturas leídas</h4>
+        <table id="tabla-facturas" class="table table-striped">
+            <caption>Listado de facturas</caption>
+            <thead class="thead-light">
+                <th scope="col">Empresa</th>
+                <th scope="col">Nro. Factura</th>
+                <th scope="col">Importe</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+                <tr class="table-success">
+                    <td></td>
+                    <td>TOTAL</td>
+                    <td>0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
 </div>
 {% endblock %}
 
@@ -136,12 +134,28 @@
                 $('table tfoot td').eq(2).text(total.toFixed(2));
             },
             error: function(data) {
-                alert(data.responseJSON["message"]);
+                alert(data.responseJSON["mensaje"]);
                 $("#form-lectura").trigger('reset');
             }
         })
     });
 
-
+    $("#form-finalizar").submit(function(e){
+        e.preventDefault();
+        var serializedData = $(this).serialize();
+        $.ajax({
+            type: 'POST',
+            dataType: 'json',
+            url: '{% url "finalizar" %}',
+            data: serializedData,
+            success: function(data) {
+                alert(data.mensaje + " - Vuelto: " + parseFloat(data.vuelto).toFixed(2));
+                location.reload();
+            },
+            error: function(data) {
+                alert(data.responseJSON["mensaje"]);
+            }
+        })
+    });
 </script>
 {% endblock %}

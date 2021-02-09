@@ -7,6 +7,7 @@ import datetime
 from .models import Lote, Pago
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum, Count
 
 
 def register(request):
@@ -27,8 +28,29 @@ def register(request):
     return render(request, template_name, context)
 
 
+def cierre(request):
+    template_name = 'caja/cierre.html'
+    hoy = datetime.date.today()
+    lotes = Lote.objects.filter(cajero=request.user.empleado, fecha=hoy)
+    suma = 0
+    count = 0
+    for lote in lotes:
+        pagos = Pago.objects.filter(lote=lote)
+        aux = pagos.aggregate(suma_importes=Sum('importe'), count_facturas=Count('importe'))
+        suma += float(aux['suma_importes'])
+        count += int(aux['count_facturas'])
+    context = {
+        'total': suma,
+        'count': count,
+        'fecha': hoy,
+    }
+    return render(request, template_name, context)
+
+
 def finalizar(request):
-    if request.method == 'POST':
+    from decimal import Decimal
+
+    if request.method == 'POST' and request.is_ajax:
         form_finalizar = FinalizarPago(request.POST)
         codigos = request.session.get('facturas')['codigos']
         if codigos:
@@ -40,29 +62,35 @@ def finalizar(request):
                     total += tot
 
                 if importe >= total:
-                    lote = Lote()
+                    lote = Lote(cajero=request.user.empleado)
                     lote.save()
                     for codigo in codigos:
                         pago = Pago(codigo=codigo, lote=lote, importe=total)
                         pago.save()
 
-                    return render(request, 'caja/finalizar.html')
+                    vuelto = importe - Decimal(total)
+
+                    # return render(request, 'caja/finalizar.html')
+                    status = 200
+                    data = {
+                        'mensaje': 'Listo',
+                        'vuelto': vuelto,
+                    }
 
                 else:
-                    context = {
-                        'form_lectura': LeerFactura(),
-                        'form_finalizar': form_finalizar,
-                        'mensaje': 'Dinero insuficiente,'
+                    status = 500
+                    data = {
+                        'mensaje': 'Dinero insuficiente',
                     }
 
         else:
-            context = {
-                'form_lectura': LeerFactura(),
-                'form_finalizar': form_finalizar,
+            status = 500
+            data = {
                 'mensaje': 'Sin facturas leidas',
             }
 
-        return render(request, 'caja/index.html', context)
+        # return render(request, 'caja/index.html', context)
+        return JsonResponse(data, status=status)
 
 
 @method_decorator(login_required, name='get')
@@ -72,7 +100,7 @@ class ListadoView(View):
     form_class_lectura = LeerFactura
     form_class_finalizar = FinalizarPago
 
-    def validar_factura(request, codigo):
+    def leer_factura(request, codigo):
         if codigo[:2] == '01':
             numero_factura = codigo[4:12]
             importe = int(codigo[12:20]) / 100
@@ -87,11 +115,10 @@ class ListadoView(View):
                     'fecha': fecha
                 }
                 status = 200
-
                 return [data, status]
             else:
                 status = 500
-                return [{'message': 'Fuera de término!'}, status]
+                return [{'mensaje': 'Fuera de término!'}, status]
 
     def get(self, request):
         form_lectura = self.form_class_lectura()
@@ -114,7 +141,7 @@ class ListadoView(View):
                 codigo = form_lectura.cleaned_data['codigo']
 
                 if codigo not in request.session.get('facturas')['codigos']:
-                    [data, status] = self.validar_factura(codigo)
+                    [data, status] = self.leer_factura(codigo)
                     if status == 200:
                         facturas = request.session.get('facturas')
                         facturas['codigos'].append(codigo)
@@ -122,7 +149,7 @@ class ListadoView(View):
 
                 else:
                     status = 500
-                    data = {'message': 'Factura ya leída'}
+                    data = {'mensaje': 'Factura ya leída'}
 
                 return JsonResponse(data, status=status)
 
