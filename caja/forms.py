@@ -1,6 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
-from .models import User
+from .models import User, Empleado
 from django.utils.translation import ugettext_lazy as _
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
@@ -17,7 +17,7 @@ class FinalizarPago(forms.Form):
 
 
 class CrearUsuario(forms.Form):
-    mail = forms.EmailField(label='', widget=forms.EmailInput(attrs={'placeholder': 'email institucional', 'class': 'form-control'}))
+    mail = forms.EmailField(label='', widget=forms.EmailInput(attrs={'placeholder': 'email institucional', 'class': 'form-control', 'size': 30}))
     password1 = forms.CharField(label='', widget=forms.PasswordInput(attrs={'placeholder': 'contraseña', 'class': 'form-control'}), validators=[validate_password])
     password2 = forms.CharField(label='', widget=forms.PasswordInput(attrs={'placeholder': 'contraseña (confirmación', 'class': 'form-control'}),
                                 help_text=_("Para verificar, introduzca la misma contraseña anterior."))
@@ -28,8 +28,8 @@ class CrearUsuario(forms.Form):
             raise ValidationError(_('El mail ingresado no corresponde al de la Institución.'))
         if User.objects.filter(mail=mail).exists():
             raise ValidationError(_('El mail ya se encuentra registrado'))
-        # if not Empleado.objects.filter(mail=mail).exists():
-        #     raise ValidationError(_('Empleado no encontrado'))
+        if not Empleado.objects.filter(mail=mail).exists():
+            raise ValidationError(_('Empleado no encontrado'))
 
         return mail
 
