@@ -30,7 +30,7 @@ SECRET_KEY = env('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DJANGO_DEBUG') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '134.14.202.206']
 
 ADMIN_ENABLED = False
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'caja.apps.CajaConfig',
+    'django_extensions',
 ]
 
 if ADMIN_ENABLED is True:
@@ -136,3 +137,13 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'caja/static')]
 STATIC_URL = '/static/'
 
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+EMAIL_HOST_USER = 'no-responder@cajapopular.gov.ar'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.cajapopular.gov.ar'
+EMAIL_USE_TLS = True
+EMAIL_PORT = 25
+EMAIL_HOST_PASSWORD = env('DJANGO_EMAIL_HOST_PASSWORD')
+EMAIL_TIMEOUT = 5
+
+DEFAULT_FROM_EMAIL = 'no-responder@cajapopular.gov.ar'
