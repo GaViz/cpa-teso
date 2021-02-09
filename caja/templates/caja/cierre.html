@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<div class="d-flex flex-row justify-content-between">
+    <div class="flex-column">
+    	<h4>Cierre de Caja {{ fecha }}</h4>
+    	<br>
+        <h4>Total cobrado: {{ total|floatformat:2 }}</h4>
+        <br>
+        <h4>Cant. Facturas: {{ count }}</h4>
+    </div>
+</div>
+{% endblock %}

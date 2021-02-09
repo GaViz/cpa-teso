@@ -5,4 +5,5 @@ from caja import views
 urlpatterns = [
     path('', views.ListadoView.as_view(), name='index'),
     path('finalizar/', views.finalizar, name='finalizar'),
+    path('cierre', views.cierre, name='cierre'),
 ]
