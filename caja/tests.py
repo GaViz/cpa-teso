@@ -36,12 +36,19 @@ class LoginTests(TestCase):
         login = self.client.login(mail=self.test_mail, password='password')
         self.assertFalse(login)
 
-    def test_login_exitoso_redireccion(self):
+    def test_login_exitoso_index(self):
         """
-        Si el login es exitoso, redirecciona pantalla principal.
+        Si está logueado, puede ver pantalla principal.
         """
         self.client.login(mail=self.test_mail, password=self.test_password)
         response = self.client.get(reverse('index'))
 
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'caja/index.html')
+
+    def test_redirecion_sin_login(self):
+        """
+        Si no se está logueado, se redirecciona a la página de login.
+        """
+        response = self.client.get(reverse('index'))
+        self.assertRedirects(response, '/accounts/login/?next=/caja/')
