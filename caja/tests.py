@@ -72,15 +72,24 @@ class ListadoViewTest(TestCase):
         session.save()
 
     def test_primera_vista_sin_facturas(self):
+        """
+        Primer acceso sin facturas leídas.
+        """
         response = self.client.get(reverse('index'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(self.client.session['facturas'], {'codigos': []})
 
     def test_finalizar_sin_facturas(self):
+        """
+        Sin facturas no se puede finalizar el cobro.
+        """
         response = self.client.post(reverse('finalizar'))
         self.assertEqual(response.status_code, 500)
 
     def test_codigo_ya_leido(self):
+        """
+        Si la factura ya se leyó, mostrar error.
+        """
         session = self.client.session
         session['facturas']['codigos'].append('01005237707000815000210624')
         session.save()
@@ -89,6 +98,9 @@ class ListadoViewTest(TestCase):
         self.assertEqual(response.status_code, 500)
 
     def test_lectura_codigo_edet(self):
+        """
+        Lectura correcto factura EDET.
+        """
         response = self.client.post(reverse('index'), {'codigo': '01005237707000815000210624'})
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {
@@ -100,6 +112,9 @@ class ListadoViewTest(TestCase):
         })
 
     def test_codigo_edet_vencido(self):
+        """
+        Si la factura de EDET está vencida, mostrar error.
+        """
         session = self.client.session
         session['facturas']['codigos'].append('01005237707000815000210304')
         session.save()
