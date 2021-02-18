@@ -25,7 +25,7 @@ urlpatterns = [
     path('caja/', include('caja.urls')),
     path('', RedirectView.as_view(url='/caja/', permanent=True)),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('accounts/register/', views.register, name='register'),
+    path('accounts/register/', views.RegisterView.as_view(), name='register'),
 ] + static(STATIC_URL, document_root=STATIC_ROOT)
 
 if ADMIN_ENABLED:

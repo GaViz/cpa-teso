@@ -1,5 +1,5 @@
 from django.views import View
-from django.shortcuts import render, redirect
+from django.shortcuts import redirect
 from django.urls import reverse
 from caja.forms import LeerFactura, CrearUsuario, FinalizarPago
 from django.http import JsonResponse
@@ -8,24 +8,9 @@ from .models import Lote, Pago
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Count
+from django.template.response import TemplateResponse
 
 
-def register(request):
-    if request.method == 'POST':
-        form = CrearUsuario(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect(reverse('login'))
-
-    else:
-        form = CrearUsuario()
-
-    template_name = 'registration/register.html'
-    context = {
-        'form': form,
-    }
-
-    return render(request, template_name, context)
 
 
 def cierre(request):
@@ -44,7 +29,7 @@ def cierre(request):
         'count': count,
         'fecha': hoy,
     }
-    return render(request, template_name, context)
+    return TemplateResponse(request, template_name, context)
 
 
 def finalizar(request):
@@ -93,32 +78,33 @@ def finalizar(request):
         return JsonResponse(data, status=status)
 
 
+def leer_factura(request, codigo):
+    if codigo[:2] == '01':
+        numero_factura = codigo[4:12]
+        importe = int(codigo[12:20]) / 100
+        fecha = datetime.datetime.strptime(codigo[20:25], "%y%j").date()
+
+        if(datetime.date.today() <= fecha):
+            data = {
+                'codigo': codigo,
+                'empresa': 'EDET',
+                'numero_factura': numero_factura,
+                'importe': importe,
+                'fecha': fecha
+            }
+            status = 200
+            return [data, status]
+        else:
+            status = 500
+            return [{'mensaje': 'Fuera de término!'}, status]
+
+
 @method_decorator(login_required, name='get')
 @method_decorator(login_required, name='post')
 class ListadoView(View):
     template_name = 'caja/index.html'
     form_class_lectura = LeerFactura
     form_class_finalizar = FinalizarPago
-
-    def leer_factura(request, codigo):
-        if codigo[:2] == '01':
-            numero_factura = codigo[4:12]
-            importe = int(codigo[12:20]) / 100
-            fecha = datetime.datetime.strptime(codigo[20:25], "%y%j").date()
-
-            if(datetime.date.today() <= fecha):
-                data = {
-                    'codigo': codigo,
-                    'empresa': 'EDET',
-                    'numero_factura': numero_factura,
-                    'importe': importe,
-                    'fecha': fecha
-                }
-                status = 200
-                return [data, status]
-            else:
-                status = 500
-                return [{'mensaje': 'Fuera de término!'}, status]
 
     def get(self, request):
         form_lectura = self.form_class_lectura()
@@ -130,7 +116,7 @@ class ListadoView(View):
 
         request.session['facturas'] = {'codigos': []}
 
-        return render(request, self.template_name, context)
+        return TemplateResponse(request, self.template_name, context)
 
     def post(self, request):
         if request.is_ajax:
@@ -141,7 +127,7 @@ class ListadoView(View):
                 codigo = form_lectura.cleaned_data['codigo']
 
                 if codigo not in request.session.get('facturas')['codigos']:
-                    [data, status] = self.leer_factura(codigo)
+                    [data, status] = leer_factura(request, codigo)
                     if status == 200:
                         facturas = request.session.get('facturas')
                         facturas['codigos'].append(codigo)
@@ -158,4 +144,27 @@ class ListadoView(View):
             'form_finalizar': form_finalizar,
         }
 
-        return render(request, self.template_name, context)
+        return TemplateResponse(request, self.template_name, context)
+
+
+class RegisterView(View):
+    template_name = 'registration/register.html'
+    form_class = CrearUsuario
+
+    def get(self, request):
+        form = self.form_class()
+        context = {
+            'form': form,
+        }
+        return TemplateResponse(request, self.template_name, context)
+
+    def post(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect(reverse('login'))
+        else:
+            context = {
+                'form': form,
+            }
+            return TemplateResponse(request, self.template_name, context)
