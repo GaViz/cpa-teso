@@ -8,8 +8,7 @@ class LoginTests(TestCase):
     test_password = 'secret'
 
     def setUp(self):
-        test_empleado = Empleado(legajo='1234', apellido="DIAZ LEDERHOS", nombre="NAHUEL MATIAS", mail='nmdiaz@cajapopular.gov.ar', estado=True)
-        test_empleado.save()
+        Empleado.objects.create(legajo='1234', apellido="DIAZ LEDERHOS", nombre="NAHUEL MATIAS", mail='nmdiaz@cajapopular.gov.ar', estado=True)
         self.credentials = {
             'mail': self.test_mail,
             'password': self.test_password}
