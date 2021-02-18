@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.urls import reverse
-from .models import User, Empleado
+from caja.models import User, Empleado
 
 
 class LoginTests(TestCase):
@@ -45,12 +45,13 @@ class LoginTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'caja/index.html')
 
-    def test_redirecion_sin_login(self):
+    def test_redireccion_sin_login(self):
         """
         Si no se está logueado, se redirecciona a la página de login.
         """
         response = self.client.get(reverse('index'))
-        self.assertRedirects(response, '/accounts/login/?next=/caja/')
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/accounts/login'))
 
 
 class ListadoViewTest(TestCase):

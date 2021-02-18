@@ -11,8 +11,6 @@ from django.db.models import Sum, Count
 from django.template.response import TemplateResponse
 
 
-
-
 def cierre(request):
     template_name = 'caja/cierre.html'
     hoy = datetime.date.today()
